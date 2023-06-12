@@ -3,9 +3,9 @@ create a project and use a led blink,I use add more ability later
 
 ## 1.material image
 
-![image-20230608141221726](C:\Users\lan\AppData\Roaming\Typora\typora-user-images\image-20230608141221726.png)
+![image-20230608141221726](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/images01.png)
 
-![image-20230608141225690](C:\Users\lan\AppData\Roaming\Typora\typora-user-images\image-20230608141225690.png)
+![image-20230608141225690](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/images02.png)
 
 ## 2.printf函数的重定向到串口输出
 
@@ -33,11 +33,11 @@ int fputc (int ch, FILE *f)
 
 Project--Options for Target--Target--Use MicroLIB(勾选)
 找到Docs文件夹下--Reference manual
-![image-20230609170719461](C:\Users\lan\AppData\Roaming\Typora\typora-user-images\image-20230609170719461.png)
+![image-20230609170719461](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/images03.png)
 
-![image-20230609171017188](C:\Users\lan\AppData\Roaming\Typora\typora-user-images\image-20230609171017188.png)
+![image-20230609171017188](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/images04.png)
 
-![image-20230609171242688](C:\Users\lan\AppData\Roaming\Typora\typora-user-images\image-20230609171242688.png)
+![image-20230609171242688](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/images05.png)
 
 ```
 #if 1
@@ -112,10 +112,10 @@ extern unsigned long getRunTimeCounterValue(void);
 #define portGET_RUN_TIME_COUNTER_VALUE getRunTimeCounterValue
 ```
 
-![image-20230610095859338](C:\Users\lan\AppData\Roaming\Typora\typora-user-images\image-20230610095859338.png)
+![image-20230610095859338](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/images06.png)
 
 配置TIM6时钟，根据**Tclk** 即内部时钟CK_INT，经过APB1预分频器后分频提供，如果APB1预分频系数等于1，则频率不变，否则频率乘以2，库函数中APB1预分频的系数是2，即PCLK1=45MHz，如图所以定时器时钟Tclk=45*2=90M。
-![image-20230610101247635](C:\Users\lan\AppData\Roaming\Typora\typora-user-images\image-20230610101247635.png)
+![image-20230610101247635](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/images07.png)
 
 计算定时器溢出时间(Tout):
 
@@ -134,7 +134,7 @@ auto-reload-preload（自动重装载）：Enable（使能）
 TRGO Parameters（触发输出）：不使能 在定时器的定时时间到达的时候输出一个信号(如：定时器更新产生TRGO信号来触发ADC的同步转换)
 ```
 
-![image-20230610103116038](C:\Users\lan\AppData\Roaming\Typora\typora-user-images\image-20230610103116038.png)
+![image-20230610103116038](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/images08.png)
 
 利用率：
 
