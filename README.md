@@ -158,3 +158,21 @@ printf("%s", CPU_RunInfo);
 printf("---------------------------------------------\r\n\n");
 ```
 
+# 4.添加SPI点亮ST7789
+
+这边添加的话选择了SPI1,并未添加中断和DMA,基础配置如下，需要特别注意的就是CPOL和CPLA
+![image-20230610103116038](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/SPI01.png)
+
+使用逻辑分析仪采集信号时需要配置的SPI1参数如下：
+
+![image-20230610103116038](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/SPI02.png)
+![image-20230610103116038](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/SPI03.png)
+
+CPOL和CPLA这里需要特别注意的是采集时是从高电平开始还是电平开始
+需要注意的就是采集的频率：
+
+逻辑分析仪的最大深度要高于SPI 时钟(APB2分频) 5-10倍才可比较好的还原信号
+此时SPI频率为(APB2)90/8=11,所以我们逻辑分析仪的深度至少
+是要11×5=55(MHZ).
+
+![image-20230610103116038](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/SPI04.png)
