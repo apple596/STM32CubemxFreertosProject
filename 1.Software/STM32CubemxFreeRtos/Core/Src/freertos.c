@@ -161,7 +161,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET);
+    //HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET);
     osDelay(500);
   }
   /* USER CODE END StartDefaultTask */
@@ -180,7 +180,7 @@ void LEDTask01(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    printf("helloworld\r\n");
+    //printf("helloworld\r\n");
     osDelay(500);
   }
   /* USER CODE END LEDTask01 */
@@ -196,10 +196,11 @@ void LEDTask01(void const * argument)
 void CPUTaskFun(void const * argument)
 {
   /* USER CODE BEGIN CPUTaskFun */
-   uint8_t CPU_RunInfo[400];
+   //uint8_t CPU_RunInfo[400];
   /* Infinite loop */
   for(;;)
   {
+#if 0		
     memset(CPU_RunInfo,0,400);              //信息缓冲区清零
 
     osThreadList(CPU_RunInfo);              //获取任务运行时间信息
@@ -216,6 +217,7 @@ void CPUTaskFun(void const * argument)
     printf("Task       Running_Count        Utilization\r\n");
     printf("%s", CPU_RunInfo);
     printf("---------------------------------------------\r\n\n");
+#endif
     osDelay(1000);
   }
   /* USER CODE END CPUTaskFun */
