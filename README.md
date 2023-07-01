@@ -176,3 +176,9 @@ CPOL和CPLA这里需要特别注意的是采集时是从高电平开始还是电
 是要11×5=55(MHZ).
 
 ![image-20230610103116038](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/SPI04.png)
+
+### 添加DMA功能
+
+![image-20230610103116038](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/DMA01.png)
+
+![image-20230610103116038](https://github.com/apple596/STM32CubemxFreertosProject/blob/main/images/DMA02.png)
