@@ -4,13 +4,14 @@
  */
 
 /*Copy this file as "lv_port_disp.c" and set this value to "1" to enable content*/
-#if 0
+#if 1
 
 /*********************
  *      INCLUDES
  *********************/
 #include "lv_port_disp_template.h"
 #include <stdbool.h>
+#include "spi.h"
 
 /*********************
  *      DEFINES
@@ -86,7 +87,7 @@ void lv_port_disp_init(void)
     static lv_disp_draw_buf_t draw_buf_dsc_1;
     static lv_color_t buf_1[MY_DISP_HOR_RES * 10];                          /*A buffer for 10 rows*/
     lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
-
+#if 0
     /* Example for 2) */
     static lv_disp_draw_buf_t draw_buf_dsc_2;
     static lv_color_t buf_2_1[MY_DISP_HOR_RES * 10];                        /*A buffer for 10 rows*/
@@ -99,7 +100,7 @@ void lv_port_disp_init(void)
     static lv_color_t buf_3_2[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*Another screen sized buffer*/
     lv_disp_draw_buf_init(&draw_buf_dsc_3, buf_3_1, buf_3_2,
                           MY_DISP_VER_RES * LV_VER_RES_MAX);   /*Initialize the display buffer*/
-
+#endif
     /*-----------------------------------
      * Register the display in LVGL
      *----------------------------------*/
@@ -110,8 +111,8 @@ void lv_port_disp_init(void)
     /*Set up the functions to access to your display*/
 
     /*Set the resolution of the display*/
-    disp_drv.hor_res = MY_DISP_HOR_RES;
-    disp_drv.ver_res = MY_DISP_VER_RES;
+    disp_drv.hor_res = 240;
+    disp_drv.ver_res = 240;
 
     /*Used to copy the buffer's content to the display*/
     disp_drv.flush_cb = disp_flush;
@@ -162,6 +163,7 @@ void disp_disable_update(void)
  *'lv_disp_flush_ready()' has to be called when finished.*/
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
+#if 1
     if(disp_flush_enabled) {
         /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
 
@@ -171,11 +173,13 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
             for(x = area->x1; x <= area->x2; x++) {
                 /*Put a pixel to the display. For example:*/
                 /*put_px(x, y, *color_p)*/
+							  TFT_DrawPoint(x,y,color_p->full);
                 color_p++;
             }
         }
     }
-
+	
+#endif
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
     lv_disp_flush_ready(disp_drv);

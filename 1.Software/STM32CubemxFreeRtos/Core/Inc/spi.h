@@ -29,7 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "src\misc\lv_color.h"
 /* USER CODE END Includes */
 
 extern SPI_HandleTypeDef hspi1;
@@ -80,6 +80,7 @@ void MX_SPI1_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
+void TFT_DrawPoint(uint16_t x,uint16_t y,uint16_t color);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

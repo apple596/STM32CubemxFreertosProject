@@ -21,6 +21,7 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
+#include "src\misc\lv_color.h"
 
 /* USER CODE END 0 */
 
@@ -104,7 +105,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     __HAL_LINKDMA(spiHandle,hdmatx,hdma_spi1_tx);
 
     /* SPI1 interrupt Init */
-    HAL_NVIC_SetPriority(SPI1_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(SPI1_IRQn);
   /* USER CODE BEGIN SPI1_MspInit 1 */
 
@@ -146,8 +147,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 uint8_t SPI_WriteByte(uint8_t *TxData,uint16_t size)
 {
 	  //while(HAL_SPI_GetState(&hspi1)!=HAL_SPI_STATE_READY){};
-    //return HAL_SPI_Transmit(&hspi1,TxData,size,1000);
-	  return HAL_SPI_Transmit_DMA(&hspi1,TxData,size);
+    return HAL_SPI_Transmit(&hspi1,TxData,size,1000);
+	  //return HAL_SPI_Transmit_DMA(&hspi1,TxData,size);
 }
 
 static void LCD_Write_Cmd(uint8_t cmd)
@@ -191,6 +192,12 @@ void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
     LCD_Write_Cmd(0x2C);
 }
 
+void TFT_DrawPoint(uint16_t x,uint16_t y,uint16_t color)
+{
+    LCD_Address_Set(x,y,x,y);//??????
+    LCD_Write_Data(color>>8);
+    LCD_Write_Data(color);
+}
 
 void LCD_Clear(uint16_t color)
 {
@@ -215,6 +222,24 @@ void LCD_Clear(uint16_t color)
     }
 }
 
+void lvgl_LCD_Color_Fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, lv_color_t *color)
+{
+
+	uint32_t y=0; 
+	uint16_t height, width;
+	width = ex - sx + 1;            
+  height = ey - sy + 1;           
+	
+	LCD_Address_Set(sx,sy,ex,ey);
+	
+	for(y = 0; y <width*height; y++) 
+	{
+		LCD_Clear(color->full);
+		color++;
+  }
+}
+
+
 static void LCD_GPIO_Init(void)
 {
     LCD_PWR(0);
@@ -225,8 +250,8 @@ static void LCD_GPIO_Init(void)
 
 void LCD_Init(void)
 {
-    //LCD_GPIO_Init();
-    //HAL_Delay(120);
+    LCD_GPIO_Init();
+    HAL_Delay(120);
 
     LCD_Write_Cmd(0x11);
     HAL_Delay(120);
