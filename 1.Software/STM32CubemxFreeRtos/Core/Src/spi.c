@@ -192,12 +192,70 @@ void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
     LCD_Write_Cmd(0x2C);
 }
 
+void LCD_Fill(uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint16_t color)
+{
+    uint16_t i = 0;
+    uint32_t size = 0, size_remain = 0;
+
+    size = (x_end - x_start + 1) * (y_end - y_start + 1) * 2;
+
+    if(size > LCD_Buf_Size)
+    {
+        size_remain = size - LCD_Buf_Size;
+        size = LCD_Buf_Size;
+    }
+
+    LCD_Address_Set(x_start, y_start, x_end, y_end);
+
+    while(1)
+    {
+        for(i = 0; i < size / 2; i++)
+        {
+            lcd_buf[2 * i] = color >> 8;
+            lcd_buf[2 * i + 1] = color;
+        }
+
+        LCD_WR_RS(1);
+				
+        SPI_WriteByte(lcd_buf, size);
+
+        if(size_remain == 0)
+            break;
+
+        if(size_remain > LCD_Buf_Size)
+        {
+            size_remain = size_remain - LCD_Buf_Size;
+        }
+
+        else
+        {
+            size = size_remain;
+            size_remain = 0;
+        }
+    }
+}
+
 void TFT_DrawPoint(uint16_t x,uint16_t y,uint16_t color)
 {
     LCD_Address_Set(x,y,x,y);//??????
     LCD_Write_Data(color>>8);
     LCD_Write_Data(color);
 }
+
+void LCD_Show_Image(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *p)
+{
+    if(x + width > LCD_Width || y + height > LCD_Height)
+    {
+        return;
+    }
+
+    LCD_Address_Set(x, y, x + width - 1, y + height - 1);
+
+    LCD_WR_RS(1);
+
+    SPI_WriteByte((uint8_t *)p, width * height * 2);
+}
+
 
 void LCD_Clear(uint16_t color)
 {
@@ -220,23 +278,6 @@ void LCD_Clear(uint16_t color)
     {
         SPI_WriteByte(lcd_buf, (uint16_t)LCD_Buf_Size);
     }
-}
-
-void lvgl_LCD_Color_Fill(uint16_t sx, uint16_t sy, uint16_t ex, uint16_t ey, lv_color_t *color)
-{
-
-	uint32_t y=0; 
-	uint16_t height, width;
-	width = ex - sx + 1;            
-  height = ey - sy + 1;           
-	
-	LCD_Address_Set(sx,sy,ex,ey);
-	
-	for(y = 0; y <width*height; y++) 
-	{
-		LCD_Clear(color->full);
-		color++;
-  }
 }
 
 

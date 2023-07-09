@@ -103,8 +103,8 @@ int main(void)
 	lv_port_disp_init();
 	//lv_demo_keypad_encoder();
 	//lv_demo_widgets();
-	//lv_demo_benchmark();
-	lv_demo_stress();
+	lv_demo_benchmark();
+	//lv_demo_stress();
 	//lv_demo_music();
   //lv_ex_label();
   /* USER CODE END 2 */
@@ -192,7 +192,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
     HAL_IncTick();
-		lv_tick_inc(1);
+		//lv_tick_inc(1);
   }
   /* USER CODE BEGIN Callback 1 */
   if (htim->Instance==TIM6)
