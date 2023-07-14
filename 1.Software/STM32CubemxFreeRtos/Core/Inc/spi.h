@@ -83,6 +83,7 @@ void MX_SPI1_Init(void);
 void TFT_DrawPoint(uint16_t x,uint16_t y,uint16_t color);
 void LCD_Fill(uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint16_t color);
 void LCD_Show_Image(uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint8_t *p);
+void LCD_Send_Data_DMA(uint16_t x, uint16_t y, uint16_t x_end, uint16_t y_end, uint8_t *p);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

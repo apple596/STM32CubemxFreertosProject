@@ -192,6 +192,18 @@ void LCD_Address_Set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
     LCD_Write_Cmd(0x2C);
 }
 
+void LCD_Send_Data_DMA(uint16_t x, uint16_t y, uint16_t x_end, uint16_t y_end, uint8_t *p)
+{
+    LCD_Address_Set(x, y, x_end, y_end);
+
+    LCD_WR_RS(1);
+
+    if ( HAL_SPI_Transmit_DMA(&hspi1, (uint8_t *)p, (x_end - x + 1) * (y_end - y + 1) * 2) != HAL_OK)
+    {
+        //while(1);	/*Halt on error*/
+    }
+}
+
 void LCD_Fill(uint16_t x_start, uint16_t y_start, uint16_t x_end, uint16_t y_end, uint16_t color)
 {
     uint16_t i = 0;
