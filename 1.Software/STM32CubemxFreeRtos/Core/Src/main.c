@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "dma.h"
 #include "spi.h"
 #include "tim.h"
@@ -56,6 +57,7 @@ uint32_t g_osRuntimeCounter;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -98,17 +100,24 @@ int main(void)
   MX_TIM6_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  LCD_Init();
-	lv_init();
-	lv_port_disp_init();
+//  LCD_Init();
+//	lv_init();
+//	lv_port_disp_init();
 	//lv_demo_keypad_encoder();
 	//lv_demo_widgets();
-	lv_demo_benchmark();
+	//lv_demo_benchmark();
 	//lv_demo_stress();
 	//lv_demo_music();
   //lv_ex_label();
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -116,10 +125,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		lv_task_handler();
-		HAL_Delay(10);
-
-     
+//		lv_task_handler();
+//		HAL_Delay(10);      
+//  		osDelay(1000);   
   }
   /* USER CODE END 3 */
 }
@@ -192,7 +200,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
     HAL_IncTick();
-		//lv_tick_inc(1);
   }
   /* USER CODE BEGIN Callback 1 */
   if (htim->Instance==TIM6)

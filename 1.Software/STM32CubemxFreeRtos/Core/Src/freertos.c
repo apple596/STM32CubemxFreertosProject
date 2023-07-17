@@ -27,7 +27,10 @@
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include <string.h>
-
+#include "spi.h"
+#include "lvgl.h" 
+#include "lv_port_disp_template.h"
+#include "lv_demo_benchmark.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,55 +52,35 @@
 /* USER CODE BEGIN Variables */
 
 /* USER CODE END Variables */
-osThreadId defaultTaskHandle;
-osThreadId LED0Handle;
-osThreadId CPUTaskHandle;
-osThreadId LedTaskHandle;
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for Tft_ReFlash_Tas */
+osThreadId_t Tft_ReFlash_TasHandle;
+const osThreadAttr_t Tft_ReFlash_Tas_attributes = {
+  .name = "Tft_ReFlash_Tas",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityHigh,
+};
+/* Definitions for DMA_Semaphore */
+osSemaphoreId_t DMA_SemaphoreHandle;
+const osSemaphoreAttr_t DMA_Semaphore_attributes = {
+  .name = "DMA_Semaphore"
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void const * argument);
-void LEDTask01(void const * argument);
-void CPUTaskFun(void const * argument);
-void LedTaskFun(void const * argument);
+void StartDefaultTask(void *argument);
+void Tft_ReFlash_Task(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
-
-/* GetIdleTaskMemory prototype (linked to static allocation support) */
-void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
-
-/* Hook prototypes */
-void configureTimerForRunTimeStats(void);
-unsigned long getRunTimeCounterValue(void);
-
-/* USER CODE BEGIN 1 */
-/* Functions needed when configGENERATE_RUN_TIME_STATS is on */
-__weak void configureTimerForRunTimeStats(void)
-{
-
-}
-
-__weak unsigned long getRunTimeCounterValue(void)
-{
-return 0;
-}
-/* USER CODE END 1 */
-
-/* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
-static StaticTask_t xIdleTaskTCBBuffer;
-static StackType_t xIdleStack[configMINIMAL_STACK_SIZE];
-
-void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
-{
-  *ppxIdleTaskTCBBuffer = &xIdleTaskTCBBuffer;
-  *ppxIdleTaskStackBuffer = &xIdleStack[0];
-  *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
-  /* place for user code */
-}
-/* USER CODE END GET_IDLE_TASK_MEMORY */
 
 /**
   * @brief  FreeRTOS initialization
@@ -113,6 +96,10 @@ void MX_FREERTOS_Init(void) {
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* creation of DMA_Semaphore */
+  DMA_SemaphoreHandle = osSemaphoreNew(1, 1, &DMA_Semaphore_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
@@ -126,25 +113,19 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* definition and creation of LED0 */
-  osThreadDef(LED0, LEDTask01, osPriorityLow, 0, 128);
-  LED0Handle = osThreadCreate(osThread(LED0), NULL);
-
-  /* definition and creation of CPUTask */
-  osThreadDef(CPUTask, CPUTaskFun, osPriorityLow, 0, 256);
-  CPUTaskHandle = osThreadCreate(osThread(CPUTask), NULL);
-
-  /* definition and creation of LedTask */
-  osThreadDef(LedTask, LedTaskFun, osPriorityLow, 0, 128);
-  LedTaskHandle = osThreadCreate(osThread(LedTask), NULL);
+  /* creation of Tft_ReFlash_Tas */
+  Tft_ReFlash_TasHandle = osThreadNew(Tft_ReFlash_Task, NULL, &Tft_ReFlash_Tas_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -155,94 +136,44 @@ void MX_FREERTOS_Init(void) {
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
+void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
-  {
+  { 
     //HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_RESET);
-    osDelay(500);
+    osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */
 }
 
-/* USER CODE BEGIN Header_LEDTask01 */
+/* USER CODE BEGIN Header_Tft_ReFlash_Task */
 /**
-* @brief Function implementing the LED0 thread.
+* @brief Function implementing the Tft_ReFlash_Tas thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_LEDTask01 */
-void LEDTask01(void const * argument)
+/* USER CODE END Header_Tft_ReFlash_Task */
+void Tft_ReFlash_Task(void *argument)
 {
-  /* USER CODE BEGIN LEDTask01 */
+  /* USER CODE BEGIN Tft_ReFlash_Task */
+	LCD_Init();
+	lv_init();
+	lv_port_disp_init();
+	lv_demo_benchmark();
   /* Infinite loop */
   for(;;)
   {
-    //printf("helloworld\r\n");
-    osDelay(500);
+		lv_task_handler();
+    osDelay(5);
   }
-  /* USER CODE END LEDTask01 */
-}
-
-/* USER CODE BEGIN Header_CPUTaskFun */
-/**
-* @brief Function implementing the CPUTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_CPUTaskFun */
-void CPUTaskFun(void const * argument)
-{
-  /* USER CODE BEGIN CPUTaskFun */
-   //uint8_t CPU_RunInfo[400];
   /* Infinite loop */
-  for(;;)
-  {
-#if 0		
-    memset(CPU_RunInfo,0,400);              //信息缓冲区清零
-
-    osThreadList(CPU_RunInfo);              //获取任务运行时间信息
-
-    printf("---------------------------------------------\r\n");
-    printf("Task      Task_Status Priority  Remaining_Stack Task_No\r\n");
-    printf("%s", CPU_RunInfo);
-    printf("---------------------------------------------\r\n");
-
-    memset(CPU_RunInfo,0,400);              //信息缓冲区清零
-
-    vTaskGetRunTimeStats((char *)&CPU_RunInfo);
-
-    printf("Task       Running_Count        Utilization\r\n");
-    printf("%s", CPU_RunInfo);
-    printf("---------------------------------------------\r\n\n");
-#endif
-    osDelay(1000);
-  }
-  /* USER CODE END CPUTaskFun */
-}
-
-/* USER CODE BEGIN Header_LedTaskFun */
-/**
-* @brief Function implementing the LedTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_LedTaskFun */
-void LedTaskFun(void const * argument)
-{
-  /* USER CODE BEGIN LedTaskFun */
-  /* Infinite loop */
-  for(;;)
-  {
-    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_0,GPIO_PIN_SET);
-    osDelay(500);
-  }
-  /* USER CODE END LedTaskFun */
+  /* USER CODE END Tft_ReFlash_Task */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
 /* USER CODE END Application */
+

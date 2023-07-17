@@ -21,8 +21,10 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
+#include "FreeRTOS.h"
+#include "cmsis_os.h"
 #include "src\misc\lv_color.h"
-
+extern osSemaphoreId_t DMA_SemaphoreHandle;
 /* USER CODE END 0 */
 
 SPI_HandleTypeDef hspi1;
@@ -105,7 +107,7 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* spiHandle)
     __HAL_LINKDMA(spiHandle,hdmatx,hdma_spi1_tx);
 
     /* SPI1 interrupt Init */
-    HAL_NVIC_SetPriority(SPI1_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(SPI1_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(SPI1_IRQn);
   /* USER CODE BEGIN SPI1_MspInit 1 */
 
@@ -146,9 +148,24 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 
 uint8_t SPI_WriteByte(uint8_t *TxData,uint16_t size)
 {
-	  //while(HAL_SPI_GetState(&hspi1)!=HAL_SPI_STATE_READY){};
-    return HAL_SPI_Transmit(&hspi1,TxData,size,1000);
+		osStatus_t result;
+		result = osSemaphoreAcquire(DMA_SemaphoreHandle,0xFFFF);
+
+		if(result == osOK)
+		{
+			return HAL_SPI_Transmit_DMA(&hspi1,TxData,size);
+		}else
+		{
+			return 1;
+		}
+    //return HAL_SPI_Transmit(&hspi1,TxData,size,1000);
 	  //return HAL_SPI_Transmit_DMA(&hspi1,TxData,size);
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+	if(hspi->Instance == hspi1.Instance)
+		osSemaphoreRelease(DMA_SemaphoreHandle);
 }
 
 static void LCD_Write_Cmd(uint8_t cmd)
